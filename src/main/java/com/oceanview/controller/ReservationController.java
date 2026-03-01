@@ -1,7 +1,9 @@
 package com.oceanview.controller;
 
+import com.oceanview.dto.DateRangeDTO;
 import com.oceanview.dto.ReservationCalculationDTO;
 import com.oceanview.dto.ReservationDTO;
+import com.oceanview.dto.RoomDTO;
 import com.oceanview.service.ReservationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +19,12 @@ public class ReservationController {
     public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
+    @PostMapping("/available-rooms")
+    public ResponseEntity<List<RoomDTO>> getAvailableRooms(
+            @RequestBody DateRangeDTO dto) {
 
+        return ResponseEntity.ok(reservationService.getAvailableRooms(dto));
+    }
     // ===== Calculate Price =====
     @PostMapping("/calculate")
     public ResponseEntity<ReservationCalculationDTO> calculateReservation(

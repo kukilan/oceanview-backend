@@ -16,4 +16,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalDate checkIn,
             LocalDate checkOut
     );
+
+    List<Reservation> findByCheckOutAfterAndCheckInBefore(
+            LocalDate checkIn,
+            LocalDate checkOut
+    );
 }

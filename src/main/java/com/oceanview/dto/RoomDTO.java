@@ -18,4 +18,5 @@ public class RoomDTO {
     private Integer tripleBeds;
     private Boolean isAc;
     private BigDecimal pricePerNight;
+    private Integer totalBeds;
 }

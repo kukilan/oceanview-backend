@@ -1,7 +1,9 @@
 package com.oceanview.service;
 
+import com.oceanview.dto.DateRangeDTO;
 import com.oceanview.dto.ReservationCalculationDTO;
 import com.oceanview.dto.ReservationDTO;
+import com.oceanview.dto.RoomDTO;
 import com.oceanview.exception.ApiException;
 import com.oceanview.model.Reservation;
 import com.oceanview.model.Room;
@@ -130,6 +132,52 @@ public class ReservationServiceImpl implements ReservationService {
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RoomDTO> getAvailableRooms(DateRangeDTO dto) {
+
+        if (dto.getCheckOut().isBefore(dto.getCheckIn())
+                || dto.getCheckOut().isEqual(dto.getCheckIn())) {
+            throw new ApiException("Invalid date range.", HttpStatus.BAD_REQUEST);
+        }
+
+        // Get all rooms
+        List<Room> allRooms = roomRepository.findAll();
+
+        // Get overlapping reservations
+        List<Reservation> overlappingReservations =
+                reservationRepository.findByCheckOutAfterAndCheckInBefore(
+                        dto.getCheckIn(),
+                        dto.getCheckOut()
+                );
+
+        // Extract booked room IDs
+        List<Integer> bookedRoomIds = overlappingReservations.stream()
+                .map(Reservation::getRoomId)
+                .toList();
+
+        // Filter available rooms
+        return allRooms.stream()
+                .filter(room -> !bookedRoomIds.contains(room.getId()))
+                .map(room -> {
+                    int totalBeds =
+                            (room.getSingleBeds() != null ? room.getSingleBeds() : 0) +
+                                    (room.getDoubleBeds() != null ? room.getDoubleBeds() : 0) +
+                                    (room.getTripleBeds() != null ? room.getTripleBeds() : 0);
+
+                    return RoomDTO.builder()
+                            .id(room.getId())
+                            .roomNumber(room.getRoomNumber())
+                            .singleBeds(room.getSingleBeds())
+                            .doubleBeds(room.getDoubleBeds())
+                            .tripleBeds(room.getTripleBeds())
+                            .isAc(room.getIsAc())
+                            .pricePerNight(room.getPricePerNight())
+                            .totalBeds(totalBeds)
+                            .build();
+                })
+                .toList();
     }
 
     @Override

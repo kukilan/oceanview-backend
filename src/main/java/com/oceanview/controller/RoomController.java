@@ -1,6 +1,6 @@
 package com.oceanview.controller;
 
-import com.oceanview.model.Room;
+import com.oceanview.dto.RoomDTO;
 import com.oceanview.service.RoomService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,48 +18,40 @@ public class RoomController {
         this.roomService = roomService;
     }
 
-    // Create Room
     @PostMapping
-    public ResponseEntity<Room> createRoom(@RequestBody Room room) {
-        return ResponseEntity.ok(roomService.createRoom(room));
+    public ResponseEntity<RoomDTO> createRoom(@RequestBody RoomDTO roomDTO) {
+        return ResponseEntity.ok(roomService.createRoom(roomDTO));
     }
 
-    // Get All Rooms
     @GetMapping
-    public ResponseEntity<List<Room>> getAllRooms() {
+    public ResponseEntity<List<RoomDTO>> getAllRooms() {
         return ResponseEntity.ok(roomService.getAllRooms());
     }
 
-    // Get Room By ID
     @GetMapping("/{id}")
-    public ResponseEntity<Room> getRoomById(@PathVariable Integer id) {
+    public ResponseEntity<RoomDTO> getRoomById(@PathVariable Integer id) {
         return ResponseEntity.ok(roomService.getRoomById(id));
     }
 
-    // Update Room
     @PutMapping("/{id}")
-    public ResponseEntity<Room> updateRoom(
-            @PathVariable Integer id,
-            @RequestBody Room room) {
-        return ResponseEntity.ok(roomService.updateRoom(id, room));
+    public ResponseEntity<RoomDTO> updateRoom(@PathVariable Integer id,
+                                              @RequestBody RoomDTO roomDTO) {
+        return ResponseEntity.ok(roomService.updateRoom(id, roomDTO));
     }
 
-    // Delete Room
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteRoom(@PathVariable Integer id) {
         roomService.deleteRoom(id);
         return ResponseEntity.ok("Room deleted successfully");
     }
 
-    // Filter by AC type
     @GetMapping("/filter/ac")
-    public ResponseEntity<List<Room>> getRoomsByAcType(@RequestParam Boolean isAc) {
+    public ResponseEntity<List<RoomDTO>> getRoomsByAcType(@RequestParam Boolean isAc) {
         return ResponseEntity.ok(roomService.getRoomsByAcType(isAc));
     }
 
-    // Filter by max price
     @GetMapping("/filter/price")
-    public ResponseEntity<List<Room>> getRoomsByMaxPrice(@RequestParam BigDecimal price) {
+    public ResponseEntity<List<RoomDTO>> getRoomsByMaxPrice(@RequestParam BigDecimal price) {
         return ResponseEntity.ok(roomService.getRoomsByMaxPrice(price));
     }
 }

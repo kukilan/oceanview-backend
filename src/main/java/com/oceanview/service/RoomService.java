@@ -1,22 +1,23 @@
 package com.oceanview.service;
 
-import com.oceanview.model.Room;
+import com.oceanview.dto.RoomDTO;
+
 import java.math.BigDecimal;
 import java.util.List;
 
 public interface RoomService {
 
-    Room createRoom(Room room);
+    RoomDTO createRoom(RoomDTO roomDTO);
 
-    List<Room> getAllRooms();
+    List<RoomDTO> getAllRooms();
 
-    Room getRoomById(Integer id);
+    RoomDTO getRoomById(Integer id);
 
-    Room updateRoom(Integer id, Room room);
+    RoomDTO updateRoom(Integer id, RoomDTO roomDTO);
 
     void deleteRoom(Integer id);
 
-    List<Room> getRoomsByAcType(Boolean isAc);
+    List<RoomDTO> getRoomsByAcType(Boolean isAc);
 
-    List<Room> getRoomsByMaxPrice(BigDecimal price);
+    List<RoomDTO> getRoomsByMaxPrice(BigDecimal price);
 }

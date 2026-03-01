@@ -1,5 +1,6 @@
 package com.oceanview.service;
 
+import com.oceanview.dto.RoomDTO;
 import com.oceanview.model.Room;
 import com.oceanview.repository.RoomRepository;
 import org.springframework.stereotype.Service;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RoomServiceImpl implements RoomService {
@@ -17,36 +19,70 @@ public class RoomServiceImpl implements RoomService {
         this.roomRepository = roomRepository;
     }
 
+    // ===== Mapping Methods =====
+
+    private RoomDTO mapToDTO(Room room) {
+        return RoomDTO.builder()
+                .id(room.getId())
+                .roomNumber(room.getRoomNumber())
+                .singleBeds(room.getSingleBeds())
+                .doubleBeds(room.getDoubleBeds())
+                .tripleBeds(room.getTripleBeds())
+                .isAc(room.getIsAc())
+                .pricePerNight(room.getPricePerNight())
+                .build();
+    }
+
+    private Room mapToEntity(RoomDTO dto) {
+        return Room.builder()
+                .id(dto.getId())
+                .roomNumber(dto.getRoomNumber())
+                .singleBeds(dto.getSingleBeds())
+                .doubleBeds(dto.getDoubleBeds())
+                .tripleBeds(dto.getTripleBeds())
+                .isAc(dto.getIsAc())
+                .pricePerNight(dto.getPricePerNight())
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    // ===== Service Methods =====
+
     @Override
-    public Room createRoom(Room room) {
-        room.setCreatedAt(LocalDateTime.now());
-        return roomRepository.save(room);
+    public RoomDTO createRoom(RoomDTO roomDTO) {
+        Room saved = roomRepository.save(mapToEntity(roomDTO));
+        return mapToDTO(saved);
     }
 
     @Override
-    public List<Room> getAllRooms() {
-        return roomRepository.findAll();
+    public List<RoomDTO> getAllRooms() {
+        return roomRepository.findAll()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Room getRoomById(Integer id) {
-        return roomRepository.findById(id)
+    public RoomDTO getRoomById(Integer id) {
+        Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Room not found with ID: " + id));
+        return mapToDTO(room);
     }
 
     @Override
-    public Room updateRoom(Integer id, Room updatedRoom) {
+    public RoomDTO updateRoom(Integer id, RoomDTO roomDTO) {
 
-        Room existingRoom = getRoomById(id);
+        Room existing = roomRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Room not found with ID: " + id));
 
-        existingRoom.setRoomNumber(updatedRoom.getRoomNumber());
-        existingRoom.setSingleBeds(updatedRoom.getSingleBeds());
-        existingRoom.setDoubleBeds(updatedRoom.getDoubleBeds());
-        existingRoom.setTripleBeds(updatedRoom.getTripleBeds());
-        existingRoom.setIsAc(updatedRoom.getIsAc());
-        existingRoom.setPricePerNight(updatedRoom.getPricePerNight());
+        existing.setRoomNumber(roomDTO.getRoomNumber());
+        existing.setSingleBeds(roomDTO.getSingleBeds());
+        existing.setDoubleBeds(roomDTO.getDoubleBeds());
+        existing.setTripleBeds(roomDTO.getTripleBeds());
+        existing.setIsAc(roomDTO.getIsAc());
+        existing.setPricePerNight(roomDTO.getPricePerNight());
 
-        return roomRepository.save(existingRoom);
+        return mapToDTO(roomRepository.save(existing));
     }
 
     @Override
@@ -55,12 +91,18 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<Room> getRoomsByAcType(Boolean isAc) {
-        return roomRepository.findByIsAc(isAc);
+    public List<RoomDTO> getRoomsByAcType(Boolean isAc) {
+        return roomRepository.findByIsAc(isAc)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Room> getRoomsByMaxPrice(BigDecimal price) {
-        return roomRepository.findByPricePerNightLessThanEqual(price);
+    public List<RoomDTO> getRoomsByMaxPrice(BigDecimal price) {
+        return roomRepository.findByPricePerNightLessThanEqual(price)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 }

@@ -24,14 +24,22 @@ public class RoomServiceImpl implements RoomService {
     // ===== Mapping Methods =====
 
     private RoomDTO mapToDTO(Room room) {
+
+        int single = room.getSingleBeds() != null ? room.getSingleBeds() : 0;
+        int dbl = room.getDoubleBeds() != null ? room.getDoubleBeds() : 0;
+        int triple = room.getTripleBeds() != null ? room.getTripleBeds() : 0;
+
+        int totalBeds = single + dbl + triple;
+
         return RoomDTO.builder()
                 .id(room.getId())
                 .roomNumber(room.getRoomNumber())
-                .singleBeds(room.getSingleBeds())
-                .doubleBeds(room.getDoubleBeds())
-                .tripleBeds(room.getTripleBeds())
+                .singleBeds(single)
+                .doubleBeds(dbl)
+                .tripleBeds(triple)
                 .isAc(room.getIsAc())
                 .pricePerNight(room.getPricePerNight())
+                .totalBeds(totalBeds)
                 .build();
     }
 

@@ -1,8 +1,10 @@
 package com.oceanview.service;
 
 import com.oceanview.dto.GuestDTO;
+import com.oceanview.exception.ApiException;
 import com.oceanview.model.Guest;
 import com.oceanview.repository.GuestRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -52,12 +54,12 @@ public class GuestServiceImpl implements GuestService {
     public GuestDTO createGuest(GuestDTO guestDTO) {
 
         if (guestRepository.findByContactNumber(guestDTO.getContactNumber()).isPresent()) {
-            throw new RuntimeException("Contact number already exists.");
+            throw new ApiException("Contact number already exists.", HttpStatus.BAD_REQUEST);
         }
 
         if (guestDTO.getEmail() != null &&
                 guestRepository.findByEmail(guestDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists.");
+            throw new ApiException("Email already exists.", HttpStatus.BAD_REQUEST);
         }
 
         Guest saved = guestRepository.save(mapToEntity(guestDTO));
@@ -75,7 +77,7 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public GuestDTO getGuestById(Integer id) {
         Guest guest = guestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Guest not found with ID: " + id));
+                .orElseThrow(() -> new ApiException("Guest not found with ID: " + id, HttpStatus.NOT_FOUND));
         return mapToDTO(guest);
     }
 
@@ -83,7 +85,7 @@ public class GuestServiceImpl implements GuestService {
     public GuestDTO updateGuest(Integer id, GuestDTO guestDTO) {
 
         Guest existing = guestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Guest not found with ID: " + id));
+                .orElseThrow(() -> new ApiException("Guest not found with ID: " + id, HttpStatus.NOT_FOUND));
 
         existing.setFullName(guestDTO.getFullName());
         existing.setAddress(guestDTO.getAddress());

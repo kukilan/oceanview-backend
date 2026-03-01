@@ -1,8 +1,10 @@
 package com.oceanview.service;
 
 import com.oceanview.dto.RoomDTO;
+import com.oceanview.exception.ApiException;
 import com.oceanview.model.Room;
 import com.oceanview.repository.RoomRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -65,7 +67,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomDTO getRoomById(Integer id) {
         Room room = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room not found with ID: " + id));
+                .orElseThrow(() -> new ApiException("Room not found with ID: " + id, HttpStatus.NOT_FOUND));
         return mapToDTO(room);
     }
 
@@ -73,7 +75,7 @@ public class RoomServiceImpl implements RoomService {
     public RoomDTO updateRoom(Integer id, RoomDTO roomDTO) {
 
         Room existing = roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room not found with ID: " + id));
+                .orElseThrow(() -> new ApiException("Room not found with ID: " + id, HttpStatus.NOT_FOUND));
 
         existing.setRoomNumber(roomDTO.getRoomNumber());
         existing.setSingleBeds(roomDTO.getSingleBeds());

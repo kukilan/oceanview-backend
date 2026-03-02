@@ -11,6 +11,7 @@ import com.oceanview.repository.GuestRepository;
 import com.oceanview.repository.ReservationRepository;
 import com.oceanview.repository.RoomRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -45,6 +46,13 @@ public class ReservationServiceImpl implements ReservationService {
                 .checkOut(reservation.getCheckOut())
                 .totalBill(reservation.getTotalBill())
                 .build();
+    }
+
+    private Integer getCurrentUserId() {
+        return (Integer) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 
     // ===== Service Methods =====
@@ -91,7 +99,7 @@ public class ReservationServiceImpl implements ReservationService {
                 .checkIn(dto.getCheckIn())
                 .checkOut(dto.getCheckOut())
                 .totalBill(totalBill)
-                .createdBy(1)  // temporary until JWT
+                .createdBy(getCurrentUserId())  // temporary until JWT
                 .createdDate(LocalDateTime.now())
                 .build();
 

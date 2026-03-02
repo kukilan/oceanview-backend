@@ -5,6 +5,7 @@ import com.oceanview.exception.ApiException;
 import com.oceanview.model.Guest;
 import com.oceanview.repository.GuestRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -44,8 +45,15 @@ public class GuestServiceImpl implements GuestService {
                 .gender(dto.getGender())
                 .dateOfBirth(dto.getDateOfBirth())
                 .createdAt(LocalDateTime.now())
-                .createdBy(1)   // Temporary fix
+                .createdBy(getCurrentUserId())
                 .build();
+    }
+
+    private Integer getCurrentUserId() {
+        return (Integer) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 
     // ===== Service Methods =====

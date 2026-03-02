@@ -1,5 +1,6 @@
 package com.oceanview.controller;
 
+import com.oceanview.dto.ChangePasswordDTO;
 import com.oceanview.dto.LoginRequestDTO;
 import com.oceanview.model.UserProfile;
 import com.oceanview.repository.UserProfileRepository;
@@ -64,5 +65,30 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(profile);
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @RequestHeader("Authorization") String header,
+            @RequestBody ChangePasswordDTO dto) {
+
+        String token = header.substring(7);
+
+        Integer userId = jwtUtil.extractUserId(token);
+
+        var userAuth = userAuthRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(dto.getOldPassword(),
+                userAuth.getPasswordHash())) {
+            throw new RuntimeException("Old password incorrect");
+        }
+
+        userAuth.setPasswordHash(
+                passwordEncoder.encode(dto.getNewPassword())
+        );
+
+        userAuthRepository.save(userAuth);
+
+        return ResponseEntity.ok("Password changed successfully");
     }
 }

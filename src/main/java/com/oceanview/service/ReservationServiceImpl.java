@@ -1,9 +1,6 @@
 package com.oceanview.service;
 
-import com.oceanview.dto.DateRangeDTO;
-import com.oceanview.dto.ReservationCalculationDTO;
-import com.oceanview.dto.ReservationDTO;
-import com.oceanview.dto.RoomDTO;
+import com.oceanview.dto.*;
 import com.oceanview.exception.ApiException;
 import com.oceanview.helper.PdfGeneratorHelper;
 import com.oceanview.model.Guest;
@@ -17,9 +14,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -234,5 +235,52 @@ public class ReservationServiceImpl implements ReservationService {
                 reservation.getCheckOut().toString(),
                 reservation.getTotalBill()
         );
+    }
+
+    @Override
+    public Map<String, Object> getRoomStatus(Integer roomNumber) {
+
+        Room room = roomRepository.findByRoomNumber(roomNumber)
+                .orElseThrow(() -> new ApiException("Room not found", HttpStatus.NOT_FOUND));
+
+        LocalDate today = LocalDate.now();
+
+        Optional<Reservation> reservation =
+                reservationRepository.findActiveReservation(room.getId(), today);
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (reservation.isEmpty()) {
+
+            response.put("status", "AVAILABLE");
+
+        } else {
+
+            Guest guest = guestRepository.findById(reservation.get().getGuestId()).get();
+
+            response.put("status", "OCCUPIED");
+            response.put("guestName", guest.getFullName());
+            response.put("contactNumber", guest.getContactNumber());
+            response.put("checkOut", reservation.get().getCheckOut());
+
+        }
+
+        return response;
+
+    }
+
+    @Override
+    public DashboardDTO getDashboardStats() {
+
+        DashboardDTO dto = new DashboardDTO();
+
+        dto.setTotalRooms(roomRepository.count());
+
+        dto.setActiveReservations(reservationRepository.countActiveReservations());
+
+        dto.setTodayRevenue(reservationRepository.sumTodayRevenue());
+
+        return dto;
+
     }
 }

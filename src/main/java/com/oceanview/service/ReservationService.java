@@ -1,11 +1,9 @@
 package com.oceanview.service;
 
-import com.oceanview.dto.DateRangeDTO;
-import com.oceanview.dto.ReservationCalculationDTO;
-import com.oceanview.dto.ReservationDTO;
-import com.oceanview.dto.RoomDTO;
+import com.oceanview.dto.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ReservationService {
 
@@ -21,4 +19,6 @@ public interface ReservationService {
 
     void cancelReservation(Long id);
     byte[] generateInvoice(Long id) throws Exception;
+    public Map<String, Object> getRoomStatus(Integer roomNumber);
+    DashboardDTO getDashboardStats();
 }

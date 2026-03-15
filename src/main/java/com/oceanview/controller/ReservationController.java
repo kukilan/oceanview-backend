@@ -66,4 +66,10 @@ public class ReservationController {
                 .header("Content-Disposition", "inline; filename=reservation-invoice.pdf")
                 .body(pdf);
     }
+    @GetMapping("/room-status/{roomNumber}")
+    public ResponseEntity<?> getRoomStatus(@PathVariable Integer roomNumber) {
+
+        return ResponseEntity.ok(reservationService.getRoomStatus(roomNumber));
+
+    }
 }

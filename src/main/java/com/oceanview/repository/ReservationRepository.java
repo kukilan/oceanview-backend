@@ -21,4 +21,5 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             LocalDate checkIn,
             LocalDate checkOut
     );
+    List<Reservation> findByIsDeletedFalse();
 }

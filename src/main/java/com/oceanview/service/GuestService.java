@@ -15,4 +15,6 @@ public interface GuestService {
     GuestDTO updateGuest(Integer id, GuestDTO guestDTO);
 
     void deleteGuest(Integer id);
+
+    GuestDTO searchGuest(String value);
 }

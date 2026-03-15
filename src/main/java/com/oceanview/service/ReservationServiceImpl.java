@@ -5,6 +5,8 @@ import com.oceanview.dto.ReservationCalculationDTO;
 import com.oceanview.dto.ReservationDTO;
 import com.oceanview.dto.RoomDTO;
 import com.oceanview.exception.ApiException;
+import com.oceanview.helper.PdfGeneratorHelper;
+import com.oceanview.model.Guest;
 import com.oceanview.model.Reservation;
 import com.oceanview.model.Room;
 import com.oceanview.repository.GuestRepository;
@@ -60,22 +62,18 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public ReservationDTO createReservation(ReservationDTO dto) {
 
-        // Validate Guest
         if (!guestRepository.existsById(dto.getGuestId())) {
             throw new ApiException("Guest not found.", HttpStatus.NOT_FOUND);
         }
 
-        // Validate Room
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new ApiException("Room not found.", HttpStatus.NOT_FOUND));
 
-        // Validate Dates
         if (dto.getCheckOut().isBefore(dto.getCheckIn())
                 || dto.getCheckOut().isEqual(dto.getCheckIn())) {
             throw new ApiException("Invalid date range.", HttpStatus.BAD_REQUEST);
         }
 
-        // Check room availability
         boolean isBooked = !reservationRepository
                 .findByRoomIdAndCheckOutAfterAndCheckInBefore(
                         dto.getRoomId(),
@@ -84,12 +82,14 @@ public class ReservationServiceImpl implements ReservationService {
                 ).isEmpty();
 
         if (isBooked) {
-            throw new ApiException("Room is already booked for selected dates.",
-                    HttpStatus.BAD_REQUEST);
+            throw new ApiException(
+                    "Room is already booked for selected dates.",
+                    HttpStatus.BAD_REQUEST
+            );
         }
 
-        // Calculate bill
         long days = ChronoUnit.DAYS.between(dto.getCheckIn(), dto.getCheckOut());
+
         BigDecimal totalBill = room.getPricePerNight()
                 .multiply(BigDecimal.valueOf(days));
 
@@ -99,11 +99,14 @@ public class ReservationServiceImpl implements ReservationService {
                 .checkIn(dto.getCheckIn())
                 .checkOut(dto.getCheckOut())
                 .totalBill(totalBill)
-                .createdBy(getCurrentUserId())  // temporary until JWT
+                .createdBy(getCurrentUserId())
                 .createdDate(LocalDateTime.now())
+                .isDeleted(false)
                 .build();
 
-        return mapToDTO(reservationRepository.save(reservation));
+        reservationRepository.save(reservation);
+
+        return mapToDTO(reservation);
     }
 
     @Override
@@ -136,7 +139,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public List<ReservationDTO> getAllReservations() {
-        return reservationRepository.findAll()
+        return reservationRepository.findByIsDeletedFalse()
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -199,6 +202,37 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public void cancelReservation(Long id) {
-        reservationRepository.deleteById(id);
+
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() ->
+                        new ApiException("Reservation not found.", HttpStatus.NOT_FOUND));
+
+        reservation.setIsDeleted(true);
+        reservation.setModifiedBy(getCurrentUserId());
+        reservation.setModifiedDate(LocalDateTime.now());
+
+        reservationRepository.save(reservation);
+    }
+
+    @Override
+    public byte[] generateInvoice(Long id) throws Exception {
+
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ApiException("Reservation not found.", HttpStatus.NOT_FOUND));
+
+        Guest guest = guestRepository.findById(reservation.getGuestId())
+                .orElseThrow(() -> new ApiException("Guest not found.", HttpStatus.NOT_FOUND));
+
+        Room room = roomRepository.findById(reservation.getRoomId())
+                .orElseThrow(() -> new ApiException("Room not found.", HttpStatus.NOT_FOUND));
+
+        return PdfGeneratorHelper.generateReservationPdf(
+                id.toString(),
+                guest.getFullName(),
+                room.getRoomNumber(),
+                reservation.getCheckIn().toString(),
+                reservation.getCheckOut().toString(),
+                reservation.getTotalBill()
+        );
     }
 }

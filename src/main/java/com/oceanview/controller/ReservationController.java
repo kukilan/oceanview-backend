@@ -56,4 +56,14 @@ public class ReservationController {
         reservationService.cancelReservation(id);
         return ResponseEntity.ok("Reservation cancelled successfully");
     }
+    @GetMapping("invoice/{id}")
+    public ResponseEntity<byte[]> generateInvoice(@PathVariable Long id) throws Exception {
+
+        byte[] pdf = reservationService.generateInvoice(id);
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "application/pdf")
+                .header("Content-Disposition", "inline; filename=reservation-invoice.pdf")
+                .body(pdf);
+    }
 }

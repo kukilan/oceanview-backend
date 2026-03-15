@@ -13,6 +13,7 @@ public class GuestController {
 
     private final GuestService guestService;
 
+
     public GuestController(GuestService guestService) {
         this.guestService = guestService;
     }
@@ -43,5 +44,9 @@ public class GuestController {
     public ResponseEntity<String> deleteGuest(@PathVariable Integer id) {
         guestService.deleteGuest(id);
         return ResponseEntity.ok("Guest deleted successfully");
+    }
+    @GetMapping("/search")
+    public ResponseEntity<GuestDTO> searchGuest(@RequestParam String value) {
+        return ResponseEntity.ok(guestService.searchGuest(value));
     }
 }

@@ -10,12 +10,14 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class GuestServiceImpl implements GuestService {
 
     private final GuestRepository guestRepository;
+
 
     public GuestServiceImpl(GuestRepository guestRepository) {
         this.guestRepository = guestRepository;
@@ -108,5 +110,23 @@ public class GuestServiceImpl implements GuestService {
     @Override
     public void deleteGuest(Integer id) {
         guestRepository.deleteById(id);
+    }
+
+    @Override
+    public GuestDTO searchGuest(String value) {
+
+        Optional<Guest> guest;
+        boolean isEmail = value.matches("^[A-Za-z0-9+_.-]+@(.+)$");
+        // check if value is email
+        if (isEmail) {
+            guest = guestRepository.findByEmail(value);
+        } else {
+            guest = guestRepository.findByContactNumber(value);
+        }
+
+        Guest existing = guest.orElseThrow(() ->
+                new ApiException("Guest not found", HttpStatus.NOT_FOUND));
+
+        return mapToDTO(existing);
     }
 }

@@ -46,4 +46,7 @@ public class Reservation {
 
     @Column(name = "modified_date")
     private LocalDateTime modifiedDate;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 }

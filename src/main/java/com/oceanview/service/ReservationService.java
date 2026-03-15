@@ -20,4 +20,5 @@ public interface ReservationService {
     List<RoomDTO> getAvailableRooms(DateRangeDTO dto);
 
     void cancelReservation(Long id);
+    byte[] generateInvoice(Long id) throws Exception;
 }
